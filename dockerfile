@@ -152,184 +152,422 @@ PYEOF
 RUN cat > templates/index.html << 'HTMLEOF'
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuizVault Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0B0F19;
+            --card-bg: rgba(20, 27, 45, 0.7);
+            --text-main: #F8FAFC;
+            --text-muted: #94A3B8;
+            --primary: #3B82F6;
+            --primary-hover: #2563EB;
+            --accent: #8B5CF6;
+            --border: rgba(255, 255, 255, 0.08);
+            --success: #10B981;
+            --glow: rgba(59, 130, 246, 0.5);
+        }
 
-<meta charset="UTF-8">
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
 
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+        body {
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.08), transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.08), transparent 25%);
+            color: var(--text-main);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 2rem;
+        }
 
-<title>QuizVault</title>
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
 
-<style>
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            animation: fadeInDown 0.6s ease-out;
+        }
 
-body{
-background:#070707;
-color:white;
-font-family:Arial;
-margin:0;
-padding:40px;
-}
+        .logo {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #60A5FA, #C084FC);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -1px;
+            text-shadow: 0 0 30px rgba(139, 92, 246, 0.4);
+        }
 
-.container{
-max-width:1100px;
-margin:auto;
-}
+        .status-badge {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+            padding: 0.5rem 1rem;
+            border-radius: 999px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
 
-h1{
-font-size:60px;
-margin-bottom:30px;
-}
+        .status-badge::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: var(--success);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--success);
+            animation: pulse 2s infinite;
+        }
 
-.card{
-background:#151515;
-border:1px solid #2a2a2a;
-border-radius:20px;
-padding:25px;
-margin-bottom:25px;
-}
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
 
-input[type=file]{
-width:100%;
-padding:18px;
-border:none;
-border-radius:14px;
-background:#1f1f1f;
-color:white;
-margin-bottom:15px;
-}
+        @media(min-width: 900px) {
+            .grid {
+                grid-template-columns: 350px 1fr;
+            }
+        }
 
-button{
-width:100%;
-padding:16px;
-border:none;
-border-radius:14px;
-background:white;
-color:black;
-font-weight:bold;
-cursor:pointer;
-}
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 20px;
+            padding: 2rem;
+            border: 1px solid var(--border);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255,255,255,0.05);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s;
+            animation: fadeInUp 0.6s ease-out backwards;
+        }
 
-.quiz{
-background:#1b1b1b;
-border:1px solid #2d2d2d;
-border-radius:18px;
-padding:20px;
-margin-top:20px;
-}
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3), 0 0 20px rgba(59, 130, 246, 0.1), inset 0 1px 0 rgba(255,255,255,0.05);
+        }
 
-.tag{
-display:inline-block;
-padding:8px 14px;
-border-radius:999px;
-background:#2a2a2a;
-margin:5px;
-font-size:13px;
-}
+        h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
 
-pre{
-white-space:pre-wrap;
-background:#111;
-padding:15px;
-border-radius:14px;
-overflow-x:auto;
-margin-top:15px;
-}
+        .file-upload-wrapper {
+            position: relative;
+            border: 2px dashed rgba(59, 130, 246, 0.4);
+            background: rgba(59, 130, 246, 0.03);
+            border-radius: 16px;
+            padding: 3rem 2rem;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+            overflow: hidden;
+        }
 
-</style>
+        .file-upload-wrapper:hover {
+            border-color: var(--primary);
+            background: rgba(59, 130, 246, 0.08);
+        }
 
+        .file-upload-wrapper input[type="file"] {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        .upload-icon {
+            width: 56px;
+            height: 56px;
+            color: var(--primary);
+            margin-bottom: 1rem;
+            filter: drop-shadow(0 0 10px rgba(59, 130, 246, 0.4));
+            transition: transform 0.3s;
+        }
+
+        .file-upload-wrapper:hover .upload-icon {
+            transform: translateY(-5px);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, var(--primary), #6366F1);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: block;
+            width: 100%;
+            margin-top: 1.5rem;
+            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 25px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(1px);
+        }
+
+        .quiz-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .quiz {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            transition: all 0.3s;
+        }
+
+        .quiz:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .quiz h3 {
+            font-size: 1.25rem;
+            color: white;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .tag {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-muted);
+            padding: 0.4rem 1rem;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .tag.class { color: var(--success); background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.2); }
+        .tag.subject { color: #F472B6; background: rgba(244, 114, 182, 0.1); border-color: rgba(244, 114, 182, 0.2); }
+        .tag.test-type { color: #38BDF8; background: rgba(56, 189, 248, 0.1); border-color: rgba(56, 189, 248, 0.2); }
+
+        details {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            overflow: hidden;
+        }
+
+        summary {
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            font-weight: 500;
+            color: var(--text-muted);
+            transition: all 0.2s;
+            outline: none;
+            user-select: none;
+        }
+
+        summary:hover {
+            background: rgba(255, 255, 255, 0.02);
+            color: white;
+        }
+
+        pre {
+            padding: 1.5rem;
+            background: #000;
+            color: #A78BFA;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            overflow-x: auto;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            line-height: 1.5;
+        }
+
+        .format-guide {
+            margin-top: 2rem;
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+        }
+
+        .format-guide h4 {
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .format-guide pre {
+            border: none;
+            padding: 1rem;
+            border-radius: 8px;
+            background: rgba(0,0,0,0.5);
+            color: var(--text-muted);
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+            70% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+        
+        /* Staggered animation delays for quizzes */
+        .quiz:nth-child(1) { animation-delay: 0.1s; }
+        .quiz:nth-child(2) { animation-delay: 0.2s; }
+        .quiz:nth-child(3) { animation-delay: 0.3s; }
+        .quiz:nth-child(4) { animation-delay: 0.4s; }
+
+    </style>
 </head>
-
 <body>
 
-<div class="container">
+    <div class="container">
+        <header>
+            <div class="logo">QuizVault</div>
+            <div class="status-badge">System Online</div>
+        </header>
 
-<h1>QuizVault</h1>
+        <div class="grid">
+            <div class="upload-section">
+                <div class="card" style="animation-delay: 0.1s">
+                    <h2>
+                        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                        Upload Quiz
+                    </h2>
+                    
+                    <form action="/upload" method="POST" enctype="multipart/form-data">
+                        <div class="file-upload-wrapper" id="dropzone">
+                            <input type="file" name="file" accept=".txt" required id="fileInput">
+                            <svg class="upload-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                            <p style="font-weight: 600; color: white; margin-bottom: 0.5rem;" id="fileName">Select .txt file</p>
+                            <p style="font-size: 0.85rem; color: var(--text-muted);">or drag and drop here</p>
+                        </div>
+                        <button type="submit" class="btn">Initialize Upload</button>
+                    </form>
+                    
+                    <div class="format-guide">
+                        <h4>Format Standard</h4>
+                        <pre>TITLE: Physics Test
+CLASS: 12
+SUBJECT: Physics
+CHAPTER: Optics
+TEST_TYPE: Mains
+QUESTION_TYPE: MCQ
 
-<div class="card">
+QUESTION: What is light?
+OPTION1: Wave
+OPTION2: Particle
+OPTION3: Both
+OPTION4: None
+ANSWER: 3</pre>
+                    </div>
+                </div>
+            </div>
 
-<h2>Upload Quiz TXT</h2>
-
-<form action="/upload" method="POST" enctype="multipart/form-data">
-
-<input type="file" name="file" accept=".txt" required>
-
-<button type="submit">
-Upload Quiz
-</button>
-
-</form>
-
-</div>
-
-<div class="card">
-
-<h2>TXT Format</h2>
-
-<pre>
-TITLE: Biology Quiz
-CLASS: 10
-SUBJECT: Biology
-CHAPTER: Cell
-TEST_TYPE: Chapterwise
-QUESTION_TYPE: Normal
-
-QUESTION: What is mitochondria?
-
-OPTION1: Organ
-OPTION2: Cell
-OPTION3: Powerhouse
-OPTION4: Bone
-
-ANSWER: 3
-</pre>
-
-</div>
-
-<div class="card">
-
-<h2>Uploaded Quizzes</h2>
-
-{% for q in quizzes %}
-
-<div class="quiz">
-
-<h3>{{ q[1] }}</h3>
-
-<div>
-
-<span class="tag">
-Class {{ q[2] }}
-</span>
-
-<span class="tag">
-{{ q[3] }}
-</span>
-
-<span class="tag">
-{{ q[4] }}
-</span>
-
-<span class="tag">
-{{ q[5] }}
-</span>
-
-<span class="tag">
-{{ q[6] }}
-</span>
-
-</div>
-
-<pre>{{ q[7] }}</pre>
-
-</div>
-
-{% endfor %}
-
-</div>
-
-</div>
-
+            <div class="dashboard-section">
+                <div class="card" style="animation-delay: 0.2s">
+                    <h2>
+                        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                        Quiz Repository
+                    </h2>
+                    
+                    <div class="quiz-list">
+                        {% if quizzes %}
+                            {% for q in quizzes %}
+                            <div class="quiz card">
+                                <h3>{{ q[1] }}</h3>
+                                <div class="tags">
+                                    <span class="tag class">Class {{ q[2] }}</span>
+                                    <span class="tag subject">{{ q[3] }}</span>
+                                    <span class="tag">{{ q[4] }}</span>
+                                    <span class="tag test-type">{{ q[5] }}</span>
+                                    <span class="tag">{{ q[6] }}</span>
+                                </div>
+                                <details>
+                                    <summary>View Raw Data</summary>
+                                    <pre>{{ q[7] }}</pre>
+                                </details>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div style="text-align: center; padding: 3rem; color: var(--text-muted); border: 1px dashed var(--border); border-radius: 12px;">
+                                <p>Database is empty. Upload your first quiz to populate the repository.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Simple script to update file name on select
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            if(e.target.files.length > 0) {
+                document.getElementById('fileName').textContent = e.target.files[0].name;
+                document.getElementById('dropzone').style.borderColor = 'var(--success)';
+            }
+        });
+    </script>
 </body>
 </html>
 HTMLEOF

@@ -543,8 +543,9 @@ ANSWER: 3</pre>
                                     <span class="tag">{{ q[6] }}</span>
                                 </div>
                                 <details>
-                                    <summary>View Raw Data</summary>
-                                    <pre>{{ q[7] }}</pre>
+                                    <summary>Take Quiz</summary>
+                                    <pre class="raw-data" style="display:none;">{{ q[7] }}</pre>
+                                    <div class="interactive-quiz"></div>
                                 </details>
                             </div>
                             {% endfor %}
@@ -566,6 +567,107 @@ ANSWER: 3</pre>
                 document.getElementById('fileName').textContent = e.target.files[0].name;
                 document.getElementById('dropzone').style.borderColor = 'var(--success)';
             }
+        });
+
+        // Interactive Quiz Parser and Logic
+        document.querySelectorAll('.quiz.card').forEach(quizCard => {
+            const rawDataEl = quizCard.querySelector('.raw-data');
+            if (!rawDataEl) return;
+            const rawText = rawDataEl.textContent;
+            const quizContainer = quizCard.querySelector('.interactive-quiz');
+            
+            // Parse the text
+            const lines = rawText.split('\n');
+            let questions = [];
+            let currentQ = null;
+            
+            lines.forEach(line => {
+                line = line.trim();
+                if (line.startsWith('QUESTION:')) {
+                    if (currentQ) questions.push(currentQ);
+                    currentQ = { question: line.substring(9).trim(), options: [], answer: null };
+                } else if (line.startsWith('OPTION')) {
+                    let parts = line.split(':');
+                    if (parts.length > 1 && currentQ) {
+                        currentQ.options.push(parts.slice(1).join(':').trim());
+                    }
+                } else if (line.startsWith('ANSWER:')) {
+                    if (currentQ) {
+                        currentQ.answer = parseInt(line.substring(7).trim());
+                    }
+                }
+            });
+            if (currentQ) questions.push(currentQ);
+            
+            // Render
+            let html = '';
+            questions.forEach((q, idx) => {
+                html += `<div class="question-block" style="margin-top: 1.5rem; background: rgba(0,0,0,0.3); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                    <p style="font-weight: 600; margin-bottom: 1rem; font-size: 1.1rem; color: white;">Q${idx+1}. ${q.question}</p>
+                    <div class="options-container" data-answer="${q.answer}">`;
+                q.options.forEach((opt, optIdx) => {
+                    html += `<button class="quiz-option-btn" data-index="${optIdx + 1}" style="display: block; width: 100%; text-align: left; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); padding: 1rem 1.25rem; border-radius: 8px; color: var(--text-muted); cursor: pointer; margin-bottom: 0.5rem; transition: all 0.2s; font-size: 0.95rem;">
+                        <span style="display: inline-block; width: 24px; height: 24px; background: rgba(255,255,255,0.1); border-radius: 50%; text-align: center; line-height: 24px; margin-right: 10px; font-size: 0.8rem;">${optIdx + 1}</span> 
+                        ${opt}
+                    </button>`;
+                });
+                html += `</div></div>`;
+            });
+            
+            quizContainer.innerHTML = html;
+            
+            // Attach event listeners
+            quizContainer.querySelectorAll('.options-container').forEach(container => {
+                const correctAns = parseInt(container.dataset.answer);
+                const btns = container.querySelectorAll('.quiz-option-btn');
+                btns.forEach(btn => {
+                    // Add hover effect via JS since inline styles override CSS
+                    btn.addEventListener('mouseenter', function() {
+                        if(!this.disabled) {
+                            this.style.background = 'rgba(255,255,255,0.08)';
+                            this.style.color = 'white';
+                        }
+                    });
+                    btn.addEventListener('mouseleave', function() {
+                        if(!this.disabled && !this.classList.contains('selected')) {
+                            this.style.background = 'rgba(255,255,255,0.03)';
+                            this.style.color = 'var(--text-muted)';
+                        }
+                    });
+
+                    btn.addEventListener('click', function() {
+                        // Disable all buttons in this container after click
+                        btns.forEach(b => {
+                            b.disabled = true;
+                            b.style.cursor = 'default';
+                        });
+                        
+                        this.classList.add('selected');
+                        this.style.color = 'white';
+                        
+                        const selected = parseInt(this.dataset.index);
+                        if (selected === correctAns) {
+                            // Correct - Green
+                            this.style.background = 'rgba(16, 185, 129, 0.15)';
+                            this.style.borderColor = 'var(--success)';
+                            this.style.boxShadow = '0 0 15px rgba(16, 185, 129, 0.2)';
+                        } else {
+                            // Wrong - Red
+                            this.style.background = 'rgba(239, 68, 68, 0.15)';
+                            this.style.borderColor = '#EF4444';
+                            this.style.boxShadow = '0 0 15px rgba(239, 68, 68, 0.2)';
+                            
+                            // Highlight correct answer
+                            const correctBtn = container.querySelector(`[data-index="${correctAns}"]`);
+                            if (correctBtn) {
+                                correctBtn.style.background = 'rgba(16, 185, 129, 0.15)';
+                                correctBtn.style.borderColor = 'var(--success)';
+                                correctBtn.style.color = 'white';
+                            }
+                        }
+                    });
+                });
+            });
         });
     </script>
 </body>
